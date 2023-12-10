@@ -13,6 +13,20 @@ struct User{
     string username;
     string password;
 };
+enum CONSOLE_SIGNS
+{
+    UP_RIGHT = (char)187,
+    DOWN_RIGHT = (char)188,
+    DOWN_LEFT = (char)200,
+    UP_LEFT = (char)201,
+    UP_EDGE = (char)203,
+    RIGHT_EDGE = (char)185,
+    DOWN_EDGE = (char)202,
+    LEFT_EDGE = (char)204,
+    HORIZONTAL = (char)205,
+    VERTICAL = '*',
+    MIDDLE = (char)206
+};
 
 void LoadMessages(vector<Message>&);
 void LoadUsers(vector<User>&);
@@ -22,6 +36,7 @@ void PrintTitle(string, int);
 void Guide(string);
 void ExecuteCommand(vector<Message>, vector<User>, string);
 int Login(string username, string password);
+bool IsUserInDB(vector<User>, User, int);
 bool Register(string username, string password);
 bool Enter(string username);
 bool EnterNew(string username);
@@ -30,9 +45,7 @@ bool New(string message);
 bool Edit(int ident, string new_message);
 bool Delete(int ident);
 void Exit();
-
-//nqma da wipeva redove zasega
-int saveProgram(vector<Message>&, ofstream&, vector<User>&, ofstream&);
+int InputCommand(vector<Message>&, vector<User>&);
 
 const string MESSAGE_FILENAME = "messages.txt";
 const string USER_FILENAME = "users.txt";
@@ -45,31 +58,26 @@ string MENU_STATE = "";
 const int MAX_COLS = 83; //SMENI SPORED EKRANA
 const int CONSOLE_WIDTH = MAX_COLS*2+2;
 
-//console signs
-const char UP_RIGHT = (char)187;
-const char DOWN_RIGHT = (char)188;
-const char DOWN_LEFT = (char)200;
-const char UP_LEFT = (char)201;
-
-const char UP_EDGE = (char)203;
-const char RIGHT_EDGE = (char)185;
-const char DOWN_EDGE = (char)202;
-const char LEFT_EDGE = (char)204;
-
-const char HORIZONTAL = (char)205;
-const char VERTICAL = '*';
-
-const char MIDDLE = (char)206;
-
+enum CONSOLE_SIGNS
+{
+    UP_RIGHT = (char)187,
+    DOWN_RIGHT = (char)188,
+    DOWN_LEFT = (char)200,
+    UP_LEFT = (char)201,
+    UP_EDGE = (char)203,
+    RIGHT_EDGE = (char)185,
+    DOWN_EDGE = (char)202,
+    LEFT_EDGE = (char)204,
+    HORIZONTAL = (char)205,
+    VERTICAL = '*',
+    MIDDLE = (char)206
+};
 //sled loginvane raboti s vectora, bez faila,
 /* LOGIN() i REGISTER() loadvat
 EXIT() save-va
 */
 int main()
 {
-    ifstream message_input_file, users_input_file;
-    ofstream message_output_file, users_output_file;
-
     vector<Message> message;
     vector<User> user;
     user.reserve(MIN_SIZE_USERS); //zarezhdaneto e mega bavno, ne mi se razpravq
@@ -82,13 +90,14 @@ int main()
 
     Guide("LOGIN");
     MENU_STATE = "LOGIN";
-    string command;
-    while(getline(cin, command, '\n'))
+    
+    int status = 0;
+    while(status == 0)
     {
-        ExecuteCommand(message, user, command);
+        status = InputCommand(message, user);
     }
     //clearCurrentLine();
-    return 0;
+    return status;
 }
 void LoadMessages(vector<Message> &message)
 {
@@ -241,8 +250,9 @@ void Guide(string menu)
         cout<<"LEAVE\n";
     }
 }
-void ExecuteCommand(vector<Message> &message, vector<User> &user, string command)
+int InputCommand(vector<Message> &message, vector<User> &user, string command)
 {
+    int status; 
     if(MENU_STATE == "LOGIN")
     {
         if(command.find("EXIT") == 0)
@@ -290,22 +300,25 @@ void ExecuteCommand(vector<Message> &message, vector<User> &user, string command
 }
 int Login(vector<User> &users, User user)
 {
+    if(IsUserInDB(users, user, true));
+    {
+        InputCommandFromMenu();
+    }
+}
+bool IsUserInDB(vector<User> users, User user, bool check_for_pass)
+{
     for(int i=0; i<users.size(); i++)
     {
-        if(users[i].name == user.name)
+        if(users[i].username == user.username)
         {
-            if(users[i].password == user.password)
+            if(check_for_pass && users[i].password == user.password)
             {
-                return 0;
+                return true;
             }
-            else
-            {
-                return 1;
-            }
+            return true;
         }
     }
-    return 2;
-    for(in)
+    return false;
 }
 bool Delete(vector<Message> &message, int ident);
 {
